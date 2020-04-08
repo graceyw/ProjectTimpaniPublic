@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+ <head>
+   <h1 rel="stylesheet" href="style.css">
+ </head>
+
+ <body>
+   <h1 class="heading">Data</h1>
+   <p id="rawData"></p>
+   <p id="stringData"></p>
+
+ <!-- JS CODE -->
+ <!-- Connect to Stitch. Source for example code:  https://stitch.mongodb.com/groups/5dc227a6ff7a257898ecc3f0/apps/5e3cb748cfb1c8b0ee79445c/gettingstarted -->
+
+ <script src="https://s3.amazonaws.com/stitch-sdks/js/bundles/4.6.0/stitch.js"></script>
+
+ <script>
+   const client = stitch.Stitch.initializeDefaultAppClient('humiditydisplayapp-bykdw');
+   const db = client.getServiceClient(stitch.RemoteMongoClient.factory, 'mongodb-atlas').db('fakeWarehouse');
+
+   client.auth.loginWithCredential(new stitch.AnonymousCredential()).then(user =>
+     db.collection('drumData').updateOne({owner_id: client.auth.user.id}, {$set:{number:42}}, {upsert:true})
+   ).then(() =>
+     db.collection('drumData').find({owner_id: client.auth.user.id}, { limit: 100}).asArray()
+   ).then(docs => {
+       console.log("Found docs", docs)
+       console.log("[MongoDB Stitch] Connected to Stitch")
+   }).catch(err => {
+     console.error(err)
+   });
+
+   const rawData = db.collection("drumData").findOne({ 'drum' : 1 });
+   const stringData = JSON.stringify(rawData);  // make data into string format to read (but doesn't really work yet)
+
+   //PRINT ON HTML PAGE IN BROWSER
+   document.getElementById("rawData").innerHTML = rawData;
+   document.getElementById("stringData").innerHTML = stringData;
+
+ </script>
+</body>
+</html>
